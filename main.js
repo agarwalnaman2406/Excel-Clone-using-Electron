@@ -1,5 +1,5 @@
 const electron = require("electron");
-
+const ejse = require('ejs-electron');
 
 
 
@@ -16,7 +16,7 @@ function createWindow () {
         enableRemoteModule:true
       }
     })
-    win.loadFile('index.html').then(function(){
+    win.loadFile('index.ejs').then(function(){
         win.maximize();
         win.webContents.openDevTools() // you will get dev tools opened by default 
     });
