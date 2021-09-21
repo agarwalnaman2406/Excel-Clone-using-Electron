@@ -12,14 +12,17 @@
 
     <div class="menu-options">Menu-options</div>
 
-    <div class="formula-input">Formula</div>
+    <div class="formula-input">
+        <input type="text" id="address" disabled>
+        <input type="text" id="formula">
+    </div>
 
     <div class="cells">
 
         <% for(let i=0 ; i<100 ; i++){%>
             <div class="row">
                 <%for(let j=0 ; j<26 ; j++) {%>
-                    <div class="cell">Cell</div>
+                    <div class="cell" contenteditable="true" rid = "<%=i%>" cid = "<%= j%>"></div>
                 <%}%>
             </div>
         <%}%>
@@ -27,7 +30,8 @@
     </div>
     <div class="sheets">Sheets</div>
 
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="./script.js"></script>
+    
 </body>
 </html>
