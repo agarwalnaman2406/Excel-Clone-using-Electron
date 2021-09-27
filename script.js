@@ -28,6 +28,7 @@ $("document").ready(function(){
         let cellObject = db[rowId][colId];
         if(cellObject.value != value){
             cellObject.value = value;
+            updateChildrens(cellObject);
             console.log(cellObject);
             console.log(db);
         }
@@ -38,22 +39,25 @@ $("document").ready(function(){
 
         let formula = $(this).val();
         // console.log(formula);
-        let value = solveFormula(formula);
+        
         // Db Update
         let address = $("#address").val();
         let {rowId, colId} = getRowIdAndColID(address);
         let cellObject = db[rowId][colId];
         if(cellObject.formula != formula){
+            let value = solveFormula(formula, cellObject);
             cellObject.value = value;
             cellObject.formula = formula;
+             // UI update
+            $(lsc).text(value);
         }
         
-        // UI update
-        $(lsc).text(value);
+       
+        
 
     })
 
-    function solveFormula(formula){
+    function solveFormula(formula, cellObject){
         // formula = ( A1 + A2 )
         let fComponents = formula.split(" ");
         // ["(" , "A1", "+", "A2, ")]
@@ -65,13 +69,20 @@ $("document").ready(function(){
                 // comp = A1
                 // A1 -> rowId and ColId
                 let {rowId, colId} = getRowIdAndColID(fComp);
-                let cellObject = db[rowId][colId];
+                let parentscellObject = db[rowId][colId];
+                if(cellObject){
+                    // Add self to to childrens of parent object
+                    addSelfToParentsChildrens(cellObject, parentscellObject);
+                    // update parents of self cellobject
+                    updateParentsOfSelfCellObject(cellObject, fComp);
+                }
+                
                 // {
                 //     name: "A1",
                 //     value: "10",
                 //     formula : ""
                 // }
-                let value = cellObject.value + "";
+                let value = parentscellObject.value + "";
                 formula = formula.replace(fComp, value);
             }
         }
@@ -80,7 +91,35 @@ $("document").ready(function(){
         return value;
     }
 
+    function updateChildrens(cellObject){
+
+        for(let i=0;i<cellObject.childrens.length;i++){
+
+            let child = cellObject.childrens[i];
+            let {rowId, colId} = getRowIdAndColID(child);
+            let childrenCellObject = db[rowId][colId];
+
+            let value = solveFormula(childrenCellObject.formula);
+            // update Db
+            childrenCellObject.value = value + "";
+            // Update UI
+            $(`.cell[rid=${rowId}][cid=${colId}]`).text(value);
+            updateChildrens(childrenCellObject);
+        }
+
+    }
+
     // utility function
+
+    function addSelfToParentsChildrens(cellObject, parentscellObject){
+        // B1 will add himself to children of A! and A2
+        parentscellObject.childrens.push(cellObject.name);
+    }
+
+    function updateParentsOfSelfCellObject(cellObject, fComp){
+        cellObject.parents.push(fComp);
+    }
+
     function getRowIdAndColID(address){
         // address = "A1", "B2", "D5";
         let colId = address.charCodeAt(0) - 65;
@@ -101,7 +140,9 @@ $("document").ready(function(){
                 let cellObject = {
                     name : cellAddress,
                     value : "",
-                    formula : ""
+                    formula : "",
+                    parents: [],
+                    childrens : []
                 }
                 // cellObject is pushed 26 time
                 row.push(cellObject);
