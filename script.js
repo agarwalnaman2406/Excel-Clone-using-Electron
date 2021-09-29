@@ -28,6 +28,10 @@ $("document").ready(function(){
         let cellObject = db[rowId][colId];
         if(cellObject.value != value){
             cellObject.value = value;
+            if(cellObject.formula){
+                removeFormula(cellObject);
+                $("#formula").val("");
+            }
             updateChildrens(cellObject);
             console.log(cellObject);
             console.log(db);
@@ -45,9 +49,11 @@ $("document").ready(function(){
         let {rowId, colId} = getRowIdAndColID(address);
         let cellObject = db[rowId][colId];
         if(cellObject.formula != formula){
+            removeFormula(cellObject);
             let value = solveFormula(formula, cellObject);
             cellObject.value = value;
             cellObject.formula = formula;
+            updateChildrens(cellObject);
              // UI update
             $(lsc).text(value);
         }
@@ -107,6 +113,20 @@ $("document").ready(function(){
             updateChildrens(childrenCellObject);
         }
 
+    }
+
+    function removeFormula(cellObject){
+        cellObject.formula = "";
+        for(let i=0;i<cellObject.parents.length;i++){
+            let parentName = cellObject.parents[i];
+            let {rowId, colId} = getRowIdAndColID(parentName);
+            let parentscellObject = db[rowId][colId];
+            let filteredChildrens = parentscellObject.childrens.filter(function(child){
+                return child != cellObject.name;
+            });
+            parentscellObject.childrens = filteredChildrens;
+        }
+        cellObject.parents = [];
     }
 
     // utility function
