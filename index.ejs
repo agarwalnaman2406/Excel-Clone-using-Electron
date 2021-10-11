@@ -17,17 +17,40 @@
         <input type="text" id="formula">
     </div>
 
-    <div class="cells">
+    <div class="content">
+        <!-- Top Left Cell -->
+        <div class="top-left-cell"></div>
 
-        <% for(let i=0 ; i<100 ; i++){%>
-            <div class="row">
-                <%for(let j=0 ; j<26 ; j++) {%>
-                    <div class="cell" contenteditable="true" rid = "<%=i%>" cid = "<%= j%>"></div>
-                <%}%>
-            </div>
-        <%}%>
+        <!-- Top Row -->
+        <div class="top-row">
+            <% for(let i=0 ; i<26 ; i++){%>
+                <div class="top-row-cell" cellId="<%=i%>"><%= String.fromCharCode(65+i)%></div>
+            <%}%>
+        </div>
+
+        <!-- Left Col -->
+        <div class="left-col">
+            <% for(let i=0 ; i<100 ; i++){%>
+                <div class="left-col-cell" cellId="<%=i%>"><%= i+1%></div>
+            <%}%>
+        </div>
+        
+        <div class="cells">
+
+            <% for(let i=0 ; i<100 ; i++){%>
+                <div class="row">
+                    <%for(let j=0 ; j<26 ; j++) {%>
+                        <div class="cell" contenteditable="true" rid = "<%=i%>" cid = "<%= j%>"></div>
+                    <%}%>
+                </div>
+            <%}%>
+    
+        </div>
 
     </div>
+
+
+    
     <div class="sheets">Sheets</div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
