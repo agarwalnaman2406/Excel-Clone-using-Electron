@@ -13,6 +13,7 @@ function createWindow () {
       height: 600,
       webPreferences: {
         nodeIntegration: true, // desktop application usme node enabled hojaega
+        contextIsolation:false,
         enableRemoteModule:true
       }
     })
