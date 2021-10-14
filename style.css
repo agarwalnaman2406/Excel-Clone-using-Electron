@@ -193,3 +193,34 @@ html,body{
 #right{
 
 }
+
+.sheets{
+    height: 30px;
+    border-bottom: 1px solid lightgray;
+    display: flex;
+    align-items: center;
+}
+
+.sheet-list{
+    display: flex;
+}
+
+.sheet{
+    margin-left: 10px;
+    padding: 4px;
+    border-radius: 15px;
+    border: 1px solid lightgreen;
+}
+
+.active-sheet{
+    background: lightgreen;
+    color: white;
+}
+
+.add-sheet{
+    margin-left: 10px;
+    background: lightgreen;
+    padding: 5px;
+    border-radius: 20px;
+    color: white;
+}

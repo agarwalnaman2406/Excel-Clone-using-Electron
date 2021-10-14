@@ -2,6 +2,9 @@ const fs = require('fs');
 const $ = require("jquery");
 const dialog = require("electron").remote.dialog;
 
+// databases of all the sheets
+let sheetsDB = [];
+// it is currentDB
 let db;
 let lsc;
 
@@ -41,6 +44,64 @@ $("document").ready(function(){
         }
         
     })
+
+
+    $(".add-sheet").on("click", function () {
+        // active-sheet change
+        // find div with active sheet=> remove active sheet => add active sheet
+        $(".sheet-list .sheet.active-sheet").removeClass("active-sheet");
+        // html append in sheet-list
+        let sheet = `<div class="sheet active-sheet" sid ="${sheetsDB.length}">Sheet ${sheetsDB.length + 1}</div>`;
+        $(".sheet-list").append(sheet);
+    
+        $(".sheet.active-sheet").on("click", function () {
+          console.log(this);
+          let hasClass = $(this).hasClass("active-sheet");
+          console.log(hasClass);
+          if (!hasClass) {
+            $(".sheet.active-sheet").removeClass("active-sheet");
+            $(this).addClass("active-sheet");
+            let sid = Number($(this).attr("sid"));
+            db = sheetsDB[sid];
+            for (let i = 0; i < 100; i++) {
+              for (let j = 0; j < 26; j++) {
+                let cellObject = db[i][j];
+                $(`.cell[rid=${i}][cid=${j}]`).text(cellObject.value);
+              }
+            }
+          }
+        });
+        // new db banjae
+        // db = newdb
+        // sheetsDB push new db
+        init();
+        // ui new hojae
+        $("#address").val("");
+        for (let i = 0; i < 100; i++) {
+          for (let j = 0; j < 26; j++) {
+            console.log("inside loop");
+            $(`.cell[rid=${i}][cid=${j}]`).html("");
+          }
+        }
+      });
+
+    $(".sheet").on("click", function () {
+        console.log(this);
+        let hasClass = $(this).hasClass("active-sheet");
+        console.log(hasClass);
+        if (!hasClass) {
+          $(".sheet.active-sheet").removeClass("active-sheet");
+          $(this).addClass("active-sheet");
+          let sid = Number($(this).attr("sid"));
+          db = sheetsDB[sid];
+          for (let i = 0; i < 100; i++) {
+            for (let j = 0; j < 26; j++) {
+              let cellObject = db[i][j];
+              $(`.cell[rid=${i}][cid=${j}]`).text(cellObject.value);
+            }
+          }
+        }
+      });
 
     $(".content").on("scroll", function(){
         let left = $(this).scrollLeft();
@@ -237,7 +298,7 @@ $("document").ready(function(){
     
     function init(){
         // db = 26 * 100
-        db = [];  // initialize database with empty array
+        let newdb = [];  // initialize database with empty array
         for(let i=0 ; i<100 ; i++){
             let row = []; // this represents a single row
             for(let j=0 ; j<26 ; j++){
@@ -254,9 +315,11 @@ $("document").ready(function(){
                 row.push(cellObject);
             }
             // finally row is pushed in db
-            db.push(row);
+            newdb.push(row);
         }
-        console.log(db);
+        db = newdb;
+        sheetsDB.push(db);
+        console.log(sheetsDB);
     }
     init();
 
