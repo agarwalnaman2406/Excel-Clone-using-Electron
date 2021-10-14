@@ -1,6 +1,6 @@
 const fs = require('fs');
 const $ = require("jquery");
-const dialog = require("electron").remote.dialog;
+// const dialog = require("electron").remote.dialog;
 
 // databases of all the sheets
 let sheetsDB = [];
@@ -43,6 +43,89 @@ $("document").ready(function(){
             console.log(db);
         }
         
+    })
+
+    function getCellObject(element){
+        let rowId = Number($(element).attr("rid"));
+        let colId = Number($(element).attr("cid"));
+        let cellObject = db[rowId][colId];
+        return cellObject;
+    }
+
+    $("#bold").on("click", function(){
+        // lsc => bold => Simple
+        // !bold => bold
+        let cellObject = getCellObject(lsc);
+        $(lsc).css("font-weight" , cellObject.bold ? "normal" : "bold");
+        cellObject.bold = !cellObject.bold;
+    })
+
+    $("#underline").on("click", function(){
+        // lsc => underline => Simple
+        // !underline => underline
+        let cellObject = getCellObject(lsc);
+        $(lsc).css("text-decoration" , cellObject.underline ? "none" : "underline");
+        cellObject.underline = !cellObject.underline;
+    })
+
+    $("#italic").on("click", function(){
+        // lsc => italic => Simple
+        // !italic => italic
+        let cellObject = getCellObject(lsc);
+        $(lsc).css("font-style" , cellObject.italic ? "normal" : "italic");
+        cellObject.italic = !cellObject.italic;
+    })
+
+    $("#font-size").on("change" , function(){
+        let fontSize =  $(this).val();
+        console.log(fontSize);
+        $(lsc).css("font-size" , fontSize+"px");
+        let cellObject = getCellObject(lsc);
+        cellObject.fontSize = fontSize+"px";
+    
+    })
+
+    $("#font-select").on("change", function(){
+        let cellObject = getCellObject(lsc);
+        let font = $(this).val();
+        console.log(font);
+        $(lsc).css("font-family" , font);
+        cellObject.font = font + "";
+    })
+    
+    
+    $("#left").on("click" , function(){
+        let cellObject = getCellObject(lsc);
+        $(lsc).css("text-align" , "left");
+        cellObject.textAlign.left = !cellObject.textAlign.left;
+    })
+
+    $("#centre").on("click" , function(){
+        let cellObject = getCellObject(lsc);
+        $(lsc).css("text-align" , "center");
+        cellObject.textAlign.center = !cellObject.textAlign.center;
+    })
+
+    $("#right").on("click" , function(){
+        let cellObject = getCellObject(lsc);
+        $(lsc).css("text-align" , "right");
+        cellObject.textAlign.right = !cellObject.textAlign.right;
+    })
+
+    $("#cell-font").on("change", function(){
+        let cellObject = getCellObject(lsc);
+        let color =  $(this).val();
+        console.log(color);
+        cellObject.fontColour = color + "";
+        $(lsc).css('color', color);
+    })
+
+    $("#cell-background").on("change", function(){
+        let cellObject = getCellObject(lsc);
+        let color =  $(this).val();
+        console.log(color);
+        cellObject.fontBackground = color + "";
+        $(lsc).css('background', color);
     })
 
 
@@ -143,11 +226,19 @@ $("document").ready(function(){
             // i ? , j ?
             let cellAddress = String.fromCharCode(65 + j) + (i + 1);
             let cellObject = {
-              name: cellAddress,
-              value: "",
-              formula: "",
-              parents: [],
-              childrens: [],
+                name : cellAddress,
+                value : "",
+                formula : "",
+                parents: [],
+                childrens : [],
+                bold :false,
+                italic: false,
+                underline:false,
+                textAlign : {left : true , center : false , right : false},
+                fontSize : "16px",
+                fontColour: "#000000",
+                fontBackground: "#FFFFFF",
+                font: "Times New Roman"
             };
             // cellObject is pushed 26 time
             row.push(cellObject);
@@ -309,7 +400,15 @@ $("document").ready(function(){
                     value : "",
                     formula : "",
                     parents: [],
-                    childrens : []
+                    childrens : [],
+                    bold :false,
+                    italic: false,
+                    underline:false,
+                    textAlign : {left : true , center : false , right : false},
+                    fontSize : "16px",
+                    fontColour: "#000000",
+                    fontBackground: "#FFFFFF",
+                    font: "Times New Roman"
                 }
                 // cellObject is pushed 26 time
                 row.push(cellObject);
