@@ -1,0 +1,20 @@
+{
+    "name": "Lec6_Excel_Electron",
+    "version": "1.0.0",
+    "description": "",
+    "main": "main.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "electron .",
+      "package-win": "electron-packager . electron-tutorial-app --overwrite --asar=true --platform=win32 --arch=ia32 --icon=assets/icons/win/icon.ico --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Electron Tutorial App\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "ejs-electron": "^2.1.1",
+      "electron": "^10.1.5",
+      "electron-packager": "^15.1.0",
+      "jquery": "^3.5.1"
+    }
+  }
