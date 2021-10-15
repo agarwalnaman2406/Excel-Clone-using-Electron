@@ -16,7 +16,6 @@ html,body{
     align-items: center;
 }
 
-
 .menu-options{
     border: 1px solid;
     height: 60px;
@@ -50,9 +49,6 @@ html,body{
 .menu div{
     margin-left: 10px;
 }
-
-
-
 
 .formula-input{
     border: 1px solid;

@@ -4,6 +4,8 @@ const $ = require("jquery");
 
 // databases of all the sheets
 let sheetsDB = [];
+let collectedGraphComponent = [];
+let graphComponentMatrix = [];
 // it is currentDB
 let db;
 let lsc;
@@ -146,6 +148,7 @@ $("document").ready(function(){
             $(this).addClass("active-sheet");
             let sid = Number($(this).attr("sid"));
             db = sheetsDB[sid];
+            graphComponentMatrix = collectedGraphComponent[sid];
             for (let i = 0; i < 100; i++) {
               for (let j = 0; j < 26; j++) {
                 let cellObject = db[i][j];
@@ -177,6 +180,7 @@ $("document").ready(function(){
           $(this).addClass("active-sheet");
           let sid = Number($(this).attr("sid"));
           db = sheetsDB[sid];
+          graphComponentMatrix = collectedGraphComponent[sid];
           for (let i = 0; i < 100; i++) {
             for (let j = 0; j < 26; j++) {
               let cellObject = db[i][j];
@@ -288,6 +292,16 @@ $("document").ready(function(){
         let cellObject = db[rowId][colId];
         if(cellObject.formula != formula){
             removeFormula(cellObject);
+            addChildToGraphComponent(formula, address);
+            // Check formula is cyclic or not, then only evaluate
+            // True -> cycle, False -> Not cyclic
+            // console.log(graphComponentMatrix);
+            let isCyclic = isGraphCylic(graphComponentMatrix);
+            if (isCyclic === true) {
+                alert("Your formula is cyclic");
+                removeChildFromGraphComponent(formula, address);
+                return;
+            }
             let value = solveFormula(formula, cellObject);
             cellObject.value = value;
             cellObject.formula = formula;
@@ -295,11 +309,44 @@ $("document").ready(function(){
              // UI update
             $(lsc).text(value);
         }
-        
-       
-        
 
     })
+
+
+    function addChildToGraphComponent(formula, childAddress) {
+        let [crid, ccid] = decodeRIDCIDFromAddress(childAddress);
+        let encodedFormula = formula.split(" ");
+        for (let i = 0; i < encodedFormula.length; i++) {
+            let asciiValue = encodedFormula[i].charCodeAt(0);
+            if (asciiValue >= 65 && asciiValue <= 90) {
+                let [prid, pcid] = decodeRIDCIDFromAddress(encodedFormula[i]);
+                // B1: A1 + 10
+                // rid -> i, cid -> j
+                graphComponentMatrix[prid][pcid].push([crid, ccid]);
+            }
+        }
+    }
+
+    function removeChildFromGraphComponent(formula, childAddress) {
+        let [crid, ccid] = decodeRIDCIDFromAddress(childAddress);
+        let encodedFormula = formula.split(" ");
+    
+        for (let i = 0; i < encodedFormula.length; i++) {
+            let asciiValue = encodedFormula[i].charCodeAt(0);
+            if (asciiValue >= 65 && asciiValue <= 90) {
+                let [prid, pcid] = decodeRIDCIDFromAddress(encodedFormula[i]);
+                graphComponentMatrix[prid][pcid].pop();
+            }
+        }
+    }
+
+    function decodeRIDCIDFromAddress(address) {
+        // address -> "A1"
+        let rid = Number(address.slice(1) - 1); // "1" -> 0
+        let cid = Number(address.charCodeAt(0)) - 65; // "A" -> 65
+        return [rid, cid];
+    }
+
 
     function solveFormula(formula, cellObject){
         // formula = ( A1 + A2 )
@@ -386,12 +433,70 @@ $("document").ready(function(){
                 colId : colId}
 
     }
+
+    function isGraphCylic(graphComponentMatrix) {
+        // Dependency -> visited, dfsVisited (2D array)
+        let visited = []; // Node visit trace
+        let dfsVisited = []; // Stack visit trace
+    
+        for (let i = 0; i < 100; i++) {
+            let visitedRow = [];
+            let dfsVisitedRow = [];
+            for (let j = 0; j < 26; j++) {
+                visitedRow.push(false);
+                dfsVisitedRow.push(false);
+            }
+            visited.push(visitedRow);
+            dfsVisited.push(dfsVisitedRow);
+        }
+    
+        for (let i = 0; i < 100; i++) {
+            for (let j = 0; j < 26; j++) {
+                if (visited[i][j] === false) {
+                    let response = dfsCycleDetection(graphComponentMatrix, i, j, visited, dfsVisited);
+                    // Found cycle so return immediately, no need to explore more path
+                    if (response == true) return true;
+                }
+            }
+        }
+    
+        return false;
+    }
+    
+    // Start -> vis(TRUE) dfsVis(TRUE)
+    // End -> dfsVis(FALSE)
+    // If vis[i][j] -> already explored path, so go back no use to explore again
+    // Cycle detection condition -> if (vis[i][j] == true && dfsVis[i][j] == true) -> cycle
+    // Return -> True/False
+    // True -> cyclic, False -> Not cyclic
+    function dfsCycleDetection(graphComponentMatrix, srcr, srcc, visited, dfsVisited) {
+        visited[srcr][srcc] = true;
+        dfsVisited[srcr][srcc] = true;
+    
+        // A1 -> [ [0, 1], [1, 0], [5, 10], .....  ]
+        for (let children = 0; children < graphComponentMatrix[srcr][srcc].length; children++) {
+            let [nbrr, nbrc] = graphComponentMatrix[srcr][srcc][children];
+            if (visited[nbrr][nbrc] === false) {
+                let response = dfsCycleDetection(graphComponentMatrix, nbrr, nbrc, visited, dfsVisited);
+                if (response === true) return true; // Found cycle so return immediately, no need to explore more path
+            }
+            else if (visited[nbrr][nbrc] === true && dfsVisited[nbrr][nbrc] === true) {
+                // Found cycle so return immediately, no need to explore more path
+                return true;
+            }
+        }
+    
+        dfsVisited[srcr][srcc] = false;
+        return false;
+    }
     
     function init(){
         // db = 26 * 100
         let newdb = [];  // initialize database with empty array
+        let graphComponent = [];
         for(let i=0 ; i<100 ; i++){
             let row = []; // this represents a single row
+            let graphRow = [];
             for(let j=0 ; j<26 ; j++){
                 // i ? , j ?
                 let cellAddress = String.fromCharCode(65+j) + (i+1);
@@ -412,12 +517,16 @@ $("document").ready(function(){
                 }
                 // cellObject is pushed 26 time
                 row.push(cellObject);
+                graphRow.push([]);
             }
             // finally row is pushed in db
             newdb.push(row);
+            graphComponent.push(graphRow);
         }
         db = newdb;
+        graphComponentMatrix = graphComponent;
         sheetsDB.push(db);
+        collectedGraphComponent.push(graphComponentMatrix);
         console.log(sheetsDB);
     }
     init();
